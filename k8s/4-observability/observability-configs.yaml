@@ -1,0 +1,40 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-telemetry
+  namespace: microservices-demo
+spec:
+  tracing:
+    - randomSamplingPercentage: 100.0
+    - customTags:
+        service.version:
+          literal:
+            value: "1.0"
+  metrics:
+    - providers:
+      - name: prometheus
+      overrides:
+      - match:
+          metric: REQUEST_COUNT
+          mode: CLIENT_AND_SERVER
+        tagOverrides:
+          response_code:
+            operation: UPSERT
+            value: "response.code"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: order-service-monitoring
+  namespace: microservices-demo
+spec:
+  host: order-service
+  trafficPolicy:
+    connectionPool:
+      http:
+        http2MaxRequests: 10
+        maxRequestsPerConnection: 5
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s

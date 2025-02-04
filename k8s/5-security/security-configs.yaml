@@ -1,0 +1,25 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: order-service-policy
+  namespace: microservices-demo
+spec:
+  selector:
+    matchLabels:
+      app: order-service
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/microservices-demo/sa/product-service"]
+    to:
+    - operation:
+        methods: ["GET", "POST"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: microservices-demo
+spec:
+  mtls:
+    mode: STRICT
