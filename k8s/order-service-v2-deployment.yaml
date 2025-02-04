@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service-v2
+  namespace: microservices-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: order-service
+        version: v2
+    spec:
+      containers:
+      - name: order-service
+        image: satish2024/order-service:v2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5002
+        env:
+        - name: PRODUCT_SERVICE_URL
+          value: "http://product-service:5000"
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 5
+          periodSeconds: 5

@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: traffic-generator
+  namespace: microservices-demo
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: traffic
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          for i in $(seq 1 100); do
+            echo "Request $i to product service"
+            wget -qO- http://product-service:5000/products
+            echo "Request $i to order service"
+            wget -qO- http://order-service:5002/health
+            sleep 2
+          done
+      restartPolicy: Never
+  backoffLimit: 1
